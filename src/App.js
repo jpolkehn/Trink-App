@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
 function App() {
   const dailyGoal = 1500; // 1,5 Liter in Millilitern
-  const reminderTimes = [8, 10, 12, 14, 16, 18, 20]; // Stunden für Erinnerungen
+  const reminderTimes = [8, 10, 12, 14, 16, 18]; // Stunden für Erinnerungen
   const [waterConsumed, setWaterConsumed] = useState(
     parseInt(localStorage.getItem('waterConsumed')) || 0
   );
@@ -36,6 +36,14 @@ function App() {
   }, [waterConsumed]);
 
   // Erinnere zu bestimmten Zeiten
+  const showReminder = useCallback(() => {
+    if (isSoundOn) {
+      const audio = new Audio('/reminder-tone.mp3'); 
+      audio.play();
+    }
+    setShowReminderPopup(true); 
+  }, [isSoundOn]);
+
   useEffect(() => {
     const checkReminderTimes = () => {
       const now = new Date();
@@ -51,15 +59,7 @@ function App() {
       const interval = setInterval(checkReminderTimes, 60 * 1000); // Jede Minute prüfen
       return () => clearInterval(interval);
     }
-  }, [isReminderOn]);
-
-  const showReminder = () => {
-    if (isSoundOn) {
-      const audio = new Audio('/Alarm-Clock.mp3'); 
-      audio.play();
-    }
-    setShowReminderPopup(true); 
-  };
+  }, [isReminderOn, reminderTimes, showReminder]);
 
   const addWater = (amount) => {
     setWaterConsumed((prev) => Math.min(prev + amount, dailyGoal));
@@ -67,9 +67,7 @@ function App() {
 
   const resetWater = () => {
     setWaterConsumed(0);
-    setTotalPenalties(0);
     localStorage.setItem('waterConsumed', 0);
-    localStorage.setItem('totalPenalties', 0);
     setIsReminderOn(false);
     setTimeout(() => setIsReminderOn(true), 1000); // Setze Erinnerungen nach 1 Sekunde zurück
   };
@@ -98,7 +96,6 @@ function App() {
         {`Du hast heute ${waterConsumed}ml von ${dailyGoal}ml getrunken.`}
       </div>
       <div className="flex space-x-4 mb-6">
-
       <button
           onClick={() => addWater(150)}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"

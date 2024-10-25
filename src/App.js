@@ -38,7 +38,7 @@ function App() {
   // Erinnere zu bestimmten Zeiten
   const showReminder = useCallback(() => {
     if (isSoundOn) {
-      const audio = new Audio('/reminder-tone.mp3'); 
+      const audio = new Audio('/Alarm-Clock.mp3'); 
       audio.play();
     }
     setShowReminderPopup(true); 
